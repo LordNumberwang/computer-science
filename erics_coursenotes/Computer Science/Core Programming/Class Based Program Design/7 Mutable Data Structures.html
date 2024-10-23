@@ -1,0 +1,840 @@
+
+				<!DOCTYPE html>
+				<html>
+					<head>
+						<meta charset="UTF-8">
+						<meta name="viewport" content="width=device-width, initial-scale=1" />
+						<link rel="stylesheet" href="pluginAssets/highlight.js/atom-one-light.css">
+						<title>7 Mutable Data Structures</title>
+					</head>
+					<body>
+						<div class="exported-note"><div class="exported-note-title">7 Mutable Data Structures</div>
+
+<style>
+		/* https://necolas.github.io/normalize.css/ */
+		html{line-height:1.15;-ms-text-size-adjust:100%;-webkit-text-size-adjust:100%}body{margin:0}
+		article,aside,footer,header,nav,section{display:block}h1{font-size:2em;margin:.67em 0}hr{box-sizing:content-box;height:0;overflow:visible}
+		pre{font-family:monospace,monospace;font-size:1em}a{background-color:transparent;-webkit-text-decoration-skip:objects}
+		b,strong{font-weight:bolder}small{font-size:80%}img{border-style:none}
+
+		body {
+			font-size: 15px;
+			color: #32373F;
+			word-wrap: break-word;
+			line-height: 1.6em;
+			background-color: #ffffff;
+			font-family: 'Avenir Next', 'Avenir', 'Arial', sans-serif;
+			padding-bottom: 0px;
+			padding-top: 0px;
+		}
+		kbd {
+			border: 1px solid rgb(220, 220, 220);
+			box-shadow: inset 0 -1px 0 rgb(220, 220, 220);
+			padding: 2px 4px;
+			border-radius: 3px;
+			background-color: rgb(243, 243, 243);
+		}
+		::-webkit-scrollbar {
+			width: 7px;
+			height: 7px;
+		}
+		::-webkit-scrollbar-corner {
+			background: none;
+		}
+		::-webkit-scrollbar-track {
+			border: none;
+		}
+		::-webkit-scrollbar-thumb {
+			background: rgba(100, 100, 100, 0.3); 
+			border-radius: 5px;
+		}
+		::-webkit-scrollbar-track:hover {
+			background: rgba(0, 0, 0, 0.1); 
+		}
+		::-webkit-scrollbar-thumb:hover {
+			background: rgba(100, 100, 100, 0.7); 
+		}
+
+		
+
+		/* Remove top padding and margin from first child so that top of rendered text is aligned to top of text editor text */
+
+		#rendered-md > h1:first-child,
+		#rendered-md > h2:first-child,
+		#rendered-md > h3:first-child,
+		#rendered-md > h4:first-child,
+		#rendered-md > ul:first-child,
+		#rendered-md > ol:first-child,
+		#rendered-md > table:first-child,
+		#rendered-md > blockquote:first-child,
+		#rendered-md > img:first-child,
+		#rendered-md > p:first-child {
+			margin-top: 0;
+			padding-top: 0;
+		}
+		
+		p, h1, h2, h3, h4, h5, h6, ul, table {
+			margin-top: .6em;
+			margin-bottom: 1.35em;
+
+			/*
+				Adds support for RTL text in the note body. It automatically detects the direction using the content.
+				Issue: https://github.com/laurent22/joplin/issues/3991
+			*/
+			unicode-bidi: plaintext;
+		}
+
+		h1, h2, h3, h4, h5, h6, ul, table {
+			margin-bottom: 0.65em;
+		}
+
+		h1, h2, h3, h4, h5, h6 {
+			line-height: 1.5em;
+		}
+		h1 {
+			font-size: 1.5em;
+			font-weight: bold;
+			border-bottom: 1px solid #dddddd;
+			padding-bottom: .3em;
+		}
+		h2 {
+			font-size: 1.3em;
+			font-weight: bold;
+			padding-bottom: .1em; */
+		}
+		h3 {
+			font-size: 1.1em;
+			font-weight: bold;
+		}
+		h4, h5, h6 {
+			font-size: 1em;
+			font-weight: bold;
+		}
+
+		.exported-note-title {
+			font-size: 2em;
+			font-weight: bold;
+			margin-bottom: 0.8em;
+			line-height: 1.5em;
+			padding-bottom: .35em;
+			border-bottom: 1px solid #dddddd;
+		}
+
+		a {
+			color: #155BDA;
+		}
+		ul, ol {
+			padding-left: 0;
+			margin-left: 1.7em;
+		}
+		li {
+			margin-bottom: .4em;
+		}
+		li p {
+			margin-top: 0.2em;
+			margin-bottom: 0;
+		}
+
+		.resource-icon {
+			display: inline-block;
+			position: relative;
+			top: 0.3em;
+			text-decoration: none;
+			width: 1.2em;
+			height: 1.4em;
+			margin-right: 0.4em;
+			background-color:  #155BDA;
+		}
+    /* These icons are obtained from the wonderful ForkAwesome project by copying the src svgs 
+     * into the css classes below.
+     * svgs are obtained from https://github.com/ForkAwesome/Fork-Awesome/tree/master/src/icons/svg
+     * instead of the svg width, height property you must use a viewbox here, 0 0 1536 1792 is typically the actual size of the icon
+     * each line begins with the pre-amble -webkit-mask: url("data:image/svg+xml;utf8,
+     * and of course finishes with ");
+     * to prevent artifacts it is also necessary to include -webkit-mask-repeat: no-repeat;
+     * on the following line
+     * */
+		.fa-joplin {
+			/* Awesome Font file */
+			-webkit-mask: url("data:image/svg+xml;utf8,<svg viewBox='0 0 1536 1792' xmlns='http://www.w3.org/2000/svg'><path d='M373.834 128C168.227 128 0 296.223 0 501.834v788.336C0 1495.778 168.227 1664 373.834 1664h788.336c205.608 0 373.83-168.222 373.83-373.83V501.834C1536 296.224 1367.778 128 1162.17 128zm397.222 205.431h417.424a7.132 7.132 0 0 1 7.132 7.133v132.552c0 4.461-3.619 8.073-8.077 8.073h-57.23c-24.168 0-43.768 19.338-44.284 43.374v2.377h-.017v136.191h-.053l-.466 509.375c-5.02 77.667-39.222 149.056-96.324 201.046-60.28 54.834-141.948 85.017-229.962 85.017-12.45 0-25.208-.61-37.907-1.785-92.157-8.682-181.494-48.601-251.662-112.438-71.99-65.517-117.147-150.03-127.164-238-11.226-98.763 23.42-192.783 95.045-257.937 81.99-74.637 198.185-101.768 316.613-75.704 5.574 1.227 9.55 6.282 9.55 11.997v199.52c-.199 2.625-1.481 6.599-8.183 2.896-.663-.365-1.194-.511-1.653-.531-21.987-10.587-45.159-17.57-68.559-19.916-.38-.04-.757-.124-1.138-.163-.537-.048-1.034-.033-1.556-.075-4.13-.354-8.183-.517-12.203-.58-.87-.011-1.771-.127-2.641-.127-.486 0-.951.05-1.437.057-1.464.011-2.886.115-4.33.163-2.76.102-5.497.211-8.182.448-.273.024-.547.07-.835.097-25.509 2.4-47.864 11.104-65.012 25.47-.954.802-1.974 1.53-2.9 2.36a1.34 1.34 0 0 1-.168.146c-23.96 21.8-34.881 53.872-30.726 90.316 4.62 40.737 26.94 81.156 62.841 113.823 35.908 32.67 80.335 52.977 125.113 57.186 35.118 3.36 66.547-3.919 89.899-20.461a97.255 97.255 0 0 0 9.365-7.501c2.925-2.661 5.569-5.5 8.086-8.416.3-.348.672-.673.975-1.024 8.253-9.864 14.222-21.067 17.996-33.148.639-2.034 1.051-4.148 1.564-6.227.381-1.563.81-3.106 1.112-4.693.555-2.784.923-5.632 1.253-8.49.086-.709.183-1.414.237-2.128.492-4.893.693-9.858.55-14.91h.013V521.623c-2.01-22.626-20.78-40.434-43.928-40.434h-57.23a8.071 8.071 0 0 1-8.077-8.073V340.564a7.132 7.132 0 0 1 7.136-7.133z'/></svg>");
+		}
+		.fa-file-image {
+			-webkit-mask: url("data:image/svg+xml;utf8,<svg viewBox='0 0 1536 1792' xmlns='http://www.w3.org/2000/svg'><path d='M1468 380c37 37 68 111 68 164v1152c0 53-43 96-96 96H96c-53 0-96-43-96-96V96C0 43 43 0 96 0h896c53 0 127 31 164 68zm-444-244v376h376c-6-17-15-34-22-41l-313-313c-7-7-24-16-41-22zm384 1528V640H992c-53 0-96-43-96-96V128H128v1536h1280zm-128-448v320H256v-192l192-192 128 128 384-384zm-832-192c-106 0-192-86-192-192s86-192 192-192 192 86 192 192-86 192-192 192z'/></svg>");
+      -webkit-mask-repeat: no-repeat;
+		}
+		.fa-file-pdf {
+			-webkit-mask: url("data:image/svg+xml;utf8,<svg viewBox='0 0 1536 1792' xmlns='http://www.w3.org/2000/svg'><path d='M1468 380c37 37 68 111 68 164v1152c0 53-43 96-96 96H96c-53 0-96-43-96-96V96C0 43 43 0 96 0h896c53 0 127 31 164 68zm-444-244v376h376c-6-17-15-34-22-41l-313-313c-7-7-24-16-41-22zm384 1528V640H992c-53 0-96-43-96-96V128H128v1536h1280zm-514-593c25 20 53 38 84 56 42-5 81-7 117-7 67 0 152 8 177 49 7 10 13 28 2 52-1 1-2 3-3 4v1c-3 18-18 38-71 38-64 0-161-29-245-73-139 15-285 46-392 83-103 176-182 262-242 262-10 0-19-2-28-7l-24-12c-3-1-4-3-6-5-5-5-9-16-6-36 10-46 64-123 188-188 8-5 18-2 23 6 1 1 2 3 2 4 31-51 67-116 107-197 45-90 80-178 104-262-32-109-42-221-24-287 7-25 22-40 42-40h22c15 0 27 5 35 15 12 14 15 36 9 68-1 3-2 6-4 8 1 3 1 5 1 8v30c-1 63-2 123-14 192 35 105 87 190 146 238zm-576 411c30-14 73-57 137-158-75 58-122 124-137 158zm398-920c-10 28-10 76-2 132 3-16 5-31 7-44 2-17 5-31 7-43 1-3 2-5 4-8-1-1-1-3-2-5-1-18-7-29-13-36 0 2-1 3-1 4zm-124 661c88-35 186-63 284-81-10-8-20-15-29-23-49-43-93-103-127-176-19 61-47 126-83 197-15 28-30 56-45 83zm646-16c-5-5-31-24-140-24 49 18 94 28 124 28 9 0 14 0 18-1 0-1-1-2-2-3z'/></svg>");
+      -webkit-mask-repeat: no-repeat;
+		}
+		.fa-file-word {
+			-webkit-mask: url("data:image/svg+xml;utf8,<svg viewBox='0 0 1536 1792' xmlns='http://www.w3.org/2000/svg'><path d='M1468 380c37 37 68 111 68 164v1152c0 53-43 96-96 96H96c-53 0-96-43-96-96V96C0 43 43 0 96 0h896c53 0 127 31 164 68zm-444-244v376h376c-6-17-15-34-22-41l-313-313c-7-7-24-16-41-22zm384 1528V640H992c-53 0-96-43-96-96V128H128v1536h1280zM233 768v107h70l164 661h159l128-485c5-15 8-30 10-46 1-8 2-16 2-24h4l3 24c3 14 4 30 9 46l128 485h159l164-661h70V768h-300v107h90l-99 438c-4 16-6 33-7 46l-2 21h-4c0-6-2-14-3-21-3-13-5-30-9-46L825 768H711l-144 545c-4 16-5 33-8 46l-4 21h-4l-2-21c-1-13-3-30-7-46l-99-438h90V768H233z'/></svg>");
+      -webkit-mask-repeat: no-repeat;
+		}
+		.fa-file-powerpoint {
+			-webkit-mask: url("data:image/svg+xml;utf8,<svg viewBox='0 0 1536 1792' xmlns='http://www.w3.org/2000/svg'><path d='M1468 380c37 37 68 111 68 164v1152c0 53-43 96-96 96H96c-53 0-96-43-96-96V96C0 43 43 0 96 0h896c53 0 127 31 164 68zm-444-244v376h376c-6-17-15-34-22-41l-313-313c-7-7-24-16-41-22zm384 1528V640H992c-53 0-96-43-96-96V128H128v1536h1280zm-992-234v106h327v-106h-93v-167h137c43 0 82-2 118-15 90-31 146-124 146-233s-54-193-137-228c-38-15-84-19-130-19H416v107h92v555h-92zm353-280H650V882h120c35 0 62 6 83 18 36 21 56 62 56 115 0 56-20 99-62 120-21 10-47 15-78 15z'/></svg>");
+      -webkit-mask-repeat: no-repeat;
+		}
+		.fa-file-excel {
+			-webkit-mask: url("data:image/svg+xml;utf8,<svg viewBox='0 0 1536 1792' xmlns='http://www.w3.org/2000/svg'><path d='M1468 380c37 37 68 111 68 164v1152c0 53-43 96-96 96H96c-53 0-96-43-96-96V96C0 43 43 0 96 0h896c53 0 127 31 164 68zm-444-244v376h376c-6-17-15-34-22-41l-313-313c-7-7-24-16-41-22zm384 1528V640H992c-53 0-96-43-96-96V128H128v1536h1280zm-979-234v106h281v-106h-75l103-161c12-19 18-34 21-34h2c1 4 3 7 5 10 4 8 10 14 17 24l107 161h-76v106h291v-106h-68l-192-273 195-282h67V768H828v107h74l-103 159c-12 19-21 34-21 33h-2c-1-4-3-7-5-10-4-7-9-14-17-23L648 875h76V768H434v107h68l189 272-194 283h-68z'/></svg>");
+      -webkit-mask-repeat: no-repeat;
+		}
+		.fa-file-audio {
+			-webkit-mask: url("data:image/svg+xml;utf8,<svg viewBox='0 0 1536 1792' xmlns='http://www.w3.org/2000/svg'><path d='M1468 380c37 37 68 111 68 164v1152c0 53-43 96-96 96H96c-53 0-96-43-96-96V96C0 43 43 0 96 0h896c53 0 127 31 164 68zm-444-244v376h376c-6-17-15-34-22-41l-313-313c-7-7-24-16-41-22zm384 1528V640H992c-53 0-96-43-96-96V128H128v1536h1280zM620 850c12 5 20 17 20 30v544c0 13-8 25-20 30-4 1-8 2-12 2-8 0-16-3-23-9l-166-167H288c-18 0-32-14-32-32v-192c0-18 14-32 32-32h131l166-167c10-9 23-12 35-7zm417 689c19 0 37-8 50-24 83-102 129-231 129-363s-46-261-129-363c-22-28-63-32-90-10-28 23-32 63-9 91 65 80 100 178 100 282s-35 202-100 282c-23 28-19 68 9 90 12 10 26 15 40 15zm-211-148c17 0 34-7 47-20 56-60 87-137 87-219s-31-159-87-219c-24-26-65-27-91-3-25 24-27 65-2 91 33 36 52 82 52 131s-19 95-52 131c-25 26-23 67 2 91 13 11 29 17 44 17z'/></svg>");
+      -webkit-mask-repeat: no-repeat;
+		}
+		.fa-file-video {
+			-webkit-mask: url("data:image/svg+xml;utf8,<svg viewBox='0 0 1536 1792' xmlns='http://www.w3.org/2000/svg'><path d='M1468 380c37 37 68 111 68 164v1152c0 53-43 96-96 96H96c-53 0-96-43-96-96V96C0 43 43 0 96 0h896c53 0 127 31 164 68zm-444-244v376h376c-6-17-15-34-22-41l-313-313c-7-7-24-16-41-22zm384 1528V640H992c-53 0-96-43-96-96V128H128v1536h1280zM768 768c70 0 128 58 128 128v384c0 70-58 128-128 128H384c-70 0-128-58-128-128V896c0-70 58-128 128-128h384zm492 2c12 5 20 17 20 30v576c0 13-8 25-20 30-4 1-8 2-12 2-8 0-17-3-23-9l-265-266v-90l265-266c6-6 15-9 23-9 4 0 8 1 12 2z'/></svg>");
+      -webkit-mask-repeat: no-repeat;
+		}
+		.fa-file-archive {
+			-webkit-mask: url("data:image/svg+xml;utf8,<svg viewBox='0 0 1536 1792' xmlns='http://www.w3.org/2000/svg'><path d='M640 384V256H512v128h128zm128 128V384H640v128h128zM640 640V512H512v128h128zm128 128V640H640v128h128zm700-388c37 37 68 111 68 164v1152c0 53-43 96-96 96H96c-53 0-96-43-96-96V96C0 43 43 0 96 0h896c53 0 127 31 164 68zm-444-244v376h376c-6-17-15-34-22-41l-313-313c-7-7-24-16-41-22zm384 1528V640H992c-53 0-96-43-96-96V128H768v128H640V128H128v1536h1280zM781 943c85 287 107 349 107 349 5 17 8 34 8 52 0 111-108 192-256 192s-256-81-256-192c0-18 3-35 8-52 0 0 21-62 120-396V768h128v128h79c29 0 54 19 62 47zm-141 465c71 0 128-29 128-64s-57-64-128-64-128 29-128 64 57 64 128 64z'/></svg>");
+      -webkit-mask-repeat: no-repeat;
+		}
+		.fa-file-code {
+			-webkit-mask: url("data:image/svg+xml;utf8,<svg viewBox='0 0 1536 1792' xmlns='http://www.w3.org/2000/svg'><path d='M1468 380c37 37 68 111 68 164v1152c0 53-43 96-96 96H96c-53 0-96-43-96-96V96C0 43 43 0 96 0h896c53 0 127 31 164 68zm-444-244v376h376c-6-17-15-34-22-41l-313-313c-7-7-24-16-41-22zm384 1528V640H992c-53 0-96-43-96-96V128H128v1536h1280zM480 768c11-14 31-17 45-6l51 38c14 11 17 31 6 45l-182 243 182 243c11 14 8 34-6 45l-51 38c-14 11-34 8-45-6l-226-301c-8-11-8-27 0-38zm802 301c8 11 8 27 0 38l-226 301c-11 14-31 17-45 6l-51-38c-14-11-17-31-6-45l182-243-182-243c-11-14-8-34 6-45l51-38c14-11 34-8 45 6zm-620 461c-18-3-29-20-26-37l138-831c3-18 20-29 37-26l63 10c18 3 29 20 26 37l-138 831c-3 18-20 29-37 26z'/></svg>");
+      -webkit-mask-repeat: no-repeat;
+		}
+		.fa-file-alt, .fa-file-csv {
+      /* fork-awesome doesn't have csv so we use the text icon */
+			-webkit-mask: url("data:image/svg+xml;utf8,<svg viewBox='0 0 1536 1792' xmlns='http://www.w3.org/2000/svg'><path d='M1468 380c37 37 68 111 68 164v1152c0 53-43 96-96 96H96c-53 0-96-43-96-96V96C0 43 43 0 96 0h896c53 0 127 31 164 68zm-444-244v376h376c-6-17-15-34-22-41l-313-313c-7-7-24-16-41-22zm384 1528V640H992c-53 0-96-43-96-96V128H128v1536h1280zM384 800c0-18 14-32 32-32h704c18 0 32 14 32 32v64c0 18-14 32-32 32H416c-18 0-32-14-32-32v-64zm736 224c18 0 32 14 32 32v64c0 18-14 32-32 32H416c-18 0-32-14-32-32v-64c0-18 14-32 32-32h704zm0 256c18 0 32 14 32 32v64c0 18-14 32-32 32H416c-18 0-32-14-32-32v-64c0-18 14-32 32-32h704z'/></svg>");
+      -webkit-mask-repeat: no-repeat;
+		}
+		.fa-file {
+			-webkit-mask: url("data:image/svg+xml;utf8,<svg viewBox='0 0 1536 1792' xmlns='http://www.w3.org/2000/svg'><path d='M1468 380c37 37 68 111 68 164v1152c0 53-43 96-96 96H96c-53 0-96-43-96-96V96C0 43 43 0 96 0h896c53 0 127 31 164 68zm-444-244v376h376c-6-17-15-34-22-41l-313-313c-7-7-24-16-41-22zm384 1528V640H992c-53 0-96-43-96-96V128H128v1536h1280z'/></svg>");
+      -webkit-mask-repeat: no-repeat;
+		}
+		blockquote {
+			border-left: 4px solid rgb(220, 220, 220);
+			padding-left: 1.2em;
+			margin-left: 0;
+			opacity: 0.7;
+		}
+
+		.jop-tinymce table,
+		table {
+			text-align: left;
+			border-collapse: collapse;
+			border: 1px solid rgb(220, 220, 220);
+			background-color: #ffffff;
+		}
+
+		.jop-tinymce table td, .jop-tinymce table th,
+		table td, th {
+			text-align: left;
+			padding: .5em 1em .5em 1em;
+			font-size: 15;
+			color: #32373F;
+			font-family: 'Avenir Next', 'Avenir', 'Arial', sans-serif;
+		}
+
+		.jop-tinymce table td,
+		table td {
+			border: 1px solid rgb(220, 220, 220);
+		}
+
+		.jop-tinymce table th,
+		table th {
+			border: 1px solid rgb(220, 220, 220);
+			border-bottom: 2px solid rgb(220, 220, 220);
+			background-color: rgb(247, 247, 247);
+		}
+
+		.jop-tinymce table tr:nth-child(even),
+		table tr:nth-child(even) {
+			background-color: rgb(247, 247, 247);
+		}
+
+		.jop-tinymce table tr:hover,
+		table tr:hover {
+			background-color: #e5e5e5;
+		}
+
+		hr {
+			border: none;
+			border-bottom: 2px solid #dddddd;
+		}
+		img {
+			max-width: 100%;
+			height: auto;
+		}
+		
+		.inline-code,
+		.mce-content-body code {
+			border: 1px solid rgb(220, 220, 220);
+			background-color: rgb(243, 243, 243);
+			padding-right: .2em;
+			padding-left: .2em;
+			border-radius: .25em;
+			color: rgb(0,0,0);
+			font-size: .9em;
+		}
+
+		.highlighted-keyword {
+			background-color: #F3B717;
+			color: black;
+		}
+
+		.not-loaded-resource img {
+			width: 1.15em;
+			height: 1.15em;
+			background: white;
+			padding: 2px !important;
+			border-radius: 2px;
+			box-shadow: 0 1px 3px #000000aa;
+		}
+
+		a.not-loaded-resource img {
+			margin-right: .2em;
+		}
+
+		a.not-loaded-resource {
+			display: flex;
+			flex-direction: row;
+			align-items: center;
+		}
+
+		.md-checkbox input[type=checkbox]:checked {
+			opacity: 0.7;
+		}
+
+		.jop-tinymce ul.joplin-checklist .checked,
+		.md-checkbox .checkbox-label-checked {
+			opacity: 0.5;
+		}
+
+		.exported-note {
+			padding: 1em;
+		}
+
+		.joplin-editable .joplin-source {
+			display: none;
+		}
+
+		mark {
+			background: #F7D26E;
+			color: black;
+		}
+
+		/* =============================================== */
+		/* For TinyMCE */
+		/* =============================================== */
+
+		.mce-content-body {
+			/* Note: we give a bit more padding at the bottom, to allow scrolling past the end of the document */
+			padding: 5px 10px 10em 0;
+		}
+
+		/*
+		.mce-content-body code {
+			background-color: transparent;
+		}
+		*/
+
+		.mce-content-body [data-mce-selected=inline-boundary] {
+			background-color: transparent;
+		}
+
+		.mce-content-body .joplin-editable {
+			cursor: pointer !important;
+		}
+
+		.mce-content-body.mce-content-readonly {
+			opacity: 0.5;
+		}
+
+		/* We need that to make sure click events have the A has a target */
+		.katex a span {
+			pointer-events: none;
+		}
+
+		.media-player {
+			width: 100%;
+			margin-top: 10px;
+		}
+
+		.media-player.media-pdf {
+			min-height: 35rem;
+			width: 100%;
+			max-width: 1000px;
+			margin: 0;
+			border: 0;
+			display: block;
+		}
+
+		/* Clear the CODE style if the element is within a joplin-editable block */
+		.mce-content-body .joplin-editable code {
+			border: none;
+			background: none;
+			padding: 0;
+			color: inherit;
+			font-size: inherit;
+		}
+
+		/* To make code blocks horizontally scrollable */
+		/* https://github.com/laurent22/joplin/issues/5740 */
+		pre.hljs {
+			overflow-x: auto;
+		}
+
+		.joplin-table-wrapper{
+			overflow-x: auto;
+			overflow-y: hidden;
+		}
+
+		/* =============================================== */
+		/* For TinyMCE */
+		/* =============================================== */
+
+		@media print {
+			body {
+				height: auto !important;
+			}
+
+			pre {
+				white-space: pre-wrap;
+			}
+
+			.code, .inline-code {
+				border: 1px solid #CBCBCB;
+			}
+
+			#joplin-container-content {
+				/* The height of the content is set dynamically by JavaScript (in updateBodyHeight) to go
+				   around various issues related to scrolling. However when printing we don't want this
+				   fixed size as that would crop the content. So we set it to auto here. "important" is
+				   needed to override the style set by JavaScript at the element-level. */
+				height: auto !important;
+			}
+		}
+	
+
+				/*
+					FOR THE MARKDOWN EDITOR
+				*/
+
+				/* Remove the indentation from the checkboxes at the root of the document
+				   (otherwise they are too far right), but keep it for their children to allow
+				   nested lists. Make sure this value matches the UL margin. */
+
+				li.md-checkbox {
+					list-style-type: none;
+				}
+
+				li.md-checkbox input[type=checkbox] {
+					margin-left: -1.71em;
+					margin-right: 0.7em;
+				}
+				
+				ul.joplin-checklist {
+					list-style:none;
+				}
+
+				/*
+					FOR THE RICH TEXT EDITOR
+				*/
+
+				ul.joplin-checklist li::before {
+					content:"\f14a";
+					font-family:"Font Awesome 5 Free";
+					background-size: 16px 16px;
+					pointer-events: all;
+					cursor: pointer;
+					width: 1em;
+					height: 1em;
+					margin-left: -1.3em;
+					position: absolute;
+					color: #32373F;
+				}
+
+				.joplin-checklist li:not(.checked)::before {
+					content:"\f0c8";
+				}
+.mermaid { width: 640px; }
+pre.mermaid > svg { white-space: unset; }
+.mermaid-export-graph {
+					opacity: 0;
+					height: 0;
+					z-index: 1;
+					position: relative;
+				} 
+				.joplin-editable:hover .mermaid-export-graph,
+				.joplin-editable .mermaid-export-graph:has(:focus-visible) {
+					opacity: 1;
+				}
+				.mermaid-export-graph > button:hover {
+					background-color: #CBDAF1 !important;
+				}</style><div id="rendered-md"><h1 id="mutable-data-structures">Mutable data structures</h1>
+<p>Lecture 20: Mutable data structures</p>
+<ul>
+<li>Removing items from a list, sentinels, and wrappers</li>
+</ul>
+<p>Lecture 21: Array Lists</p>
+<ul>
+<li>Working with Java’s built-in mutable lists</li>
+</ul>
+<p>Lecture 22: Array Lists</p>
+<ul>
+<li>Binary search over sorted ArrayLists, sorting ArrayLists</li>
+</ul>
+<hr>
+<h3 id="remove-items-from-list">Remove Items from list</h3>
+<p>Signature: <code class="inline-code">void removePerson(String name)</code></p>
+<p>Empty list: easy enough - nothing happens: <code class="inline-code">return;</code><br>
+ConsList: If predicate matched, remove. Otherwise move along. Need accumulator:</p>
+<div class="joplin-editable"><pre class="joplin-source" data-joplin-language="Java" data-joplin-source-open="```Java&#10;" data-joplin-source-close="&#10;```">void removePerson(String name) {
+  this.rest.removePersonHelp(name, this);
+}
+void removePersonHelp(String name, ConsLoPerson prev) {
+  if (this.first.name.equals(name)) {
+    prev.rest = this.rest; // Modify the previous node to bypass this node
+  }
+  else {
+    this.rest.removePersonHelp(name, this); // this is the previous node of this.rest
+  }
+}</pre><pre class="hljs"><code><span class="hljs-keyword">void</span> <span class="hljs-title function_">removePerson</span><span class="hljs-params">(String name)</span> {
+  <span class="hljs-built_in">this</span>.rest.removePersonHelp(name, <span class="hljs-built_in">this</span>);
+}
+<span class="hljs-keyword">void</span> <span class="hljs-title function_">removePersonHelp</span><span class="hljs-params">(String name, ConsLoPerson prev)</span> {
+  <span class="hljs-keyword">if</span> (<span class="hljs-built_in">this</span>.first.name.equals(name)) {
+    prev.rest = <span class="hljs-built_in">this</span>.rest; <span class="hljs-comment">// Modify the previous node to bypass this node</span>
+  }
+  <span class="hljs-keyword">else</span> {
+    <span class="hljs-built_in">this</span>.rest.removePersonHelp(name, <span class="hljs-built_in">this</span>); <span class="hljs-comment">// this is the previous node of this.rest</span>
+  }
+}</code></pre></div>
+<p>But note this removePerson fails to handle if he's at the front of the list.<br>
+Idea: Sentinel class that allows a 'head' to be defined. Easier to operate on.<br>
+This Sentinel needs to be a subclass of ANode (i.e. has rest , but no data.), needs to implement List&lt;Person&gt;.</p>
+<p>Then define a new MutablePersonList class - that manages the wrapper.<br>
+<img src="../../../_resources/5a4ee0a53b1a48ddaf6f73498ea3db61.png" alt="7598322d5406d991b847030d477e3fe5.png"></p>
+<div class="joplin-editable"><pre class="joplin-source" data-joplin-language="Java" data-joplin-source-open="```Java&#10;" data-joplin-source-close="&#10;```">abstract class APersonList {
+  abstract void removePersonHelp(String name, ANode prev);
+  APersonList() { } // nothing to do here
+}
+
+// Represents a node in a list that has some list after it
+class ANode extends APersonList {
+  APersonList rest;
+  ANode(APersonList rest) {
+    this.rest = rest;
+  }
+}
+
+// Represents the empty end of the list
+class MtLoPerson extends APersonList {
+  MtLoPerson() { } // nothing to do
+  void removePersonHelp(String name, ANode prev) { return; }
+}
+
+// Represents a data node in the list
+class ConsLoPerson extends ANode {
+  Person data;
+  ConsLoPerson(Person data, APersonList rest) {
+    super(rest);
+    this.data = data;
+  }
+  void removePersonHelp(String name, ANode prev) {
+    if (this.first.name.equals(name)) {
+      prev.rest = this.rest;
+    }
+    else {
+      this.rest.removePersonHelp(name, this);
+    }
+  }
+}
+class Sentinel extends ANode {
+  Sentinel(APersonList rest) {
+    super(rest);
+  }
+  void removePersonHelp(String name, ANode prev) {
+    throw new RuntimeException(&quot;Can't try to remove on a Sentinel!&quot;);
+  }
+}</pre><pre class="hljs"><code><span class="hljs-keyword">abstract</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">APersonList</span> {
+  <span class="hljs-keyword">abstract</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">removePersonHelp</span><span class="hljs-params">(String name, ANode prev)</span>;
+  APersonList() { } <span class="hljs-comment">// nothing to do here</span>
+}
+
+<span class="hljs-comment">// Represents a node in a list that has some list after it</span>
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">ANode</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">APersonList</span> {
+  APersonList rest;
+  ANode(APersonList rest) {
+    <span class="hljs-built_in">this</span>.rest = rest;
+  }
+}
+
+<span class="hljs-comment">// Represents the empty end of the list</span>
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">MtLoPerson</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">APersonList</span> {
+  MtLoPerson() { } <span class="hljs-comment">// nothing to do</span>
+  <span class="hljs-keyword">void</span> <span class="hljs-title function_">removePersonHelp</span><span class="hljs-params">(String name, ANode prev)</span> { <span class="hljs-keyword">return</span>; }
+}
+
+<span class="hljs-comment">// Represents a data node in the list</span>
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">ConsLoPerson</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">ANode</span> {
+  Person data;
+  ConsLoPerson(Person data, APersonList rest) {
+    <span class="hljs-built_in">super</span>(rest);
+    <span class="hljs-built_in">this</span>.data = data;
+  }
+  <span class="hljs-keyword">void</span> <span class="hljs-title function_">removePersonHelp</span><span class="hljs-params">(String name, ANode prev)</span> {
+    <span class="hljs-keyword">if</span> (<span class="hljs-built_in">this</span>.first.name.equals(name)) {
+      prev.rest = <span class="hljs-built_in">this</span>.rest;
+    }
+    <span class="hljs-keyword">else</span> {
+      <span class="hljs-built_in">this</span>.rest.removePersonHelp(name, <span class="hljs-built_in">this</span>);
+    }
+  }
+}
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">Sentinel</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">ANode</span> {
+  Sentinel(APersonList rest) {
+    <span class="hljs-built_in">super</span>(rest);
+  }
+  <span class="hljs-keyword">void</span> <span class="hljs-title function_">removePersonHelp</span><span class="hljs-params">(String name, ANode prev)</span> {
+    <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">RuntimeException</span>(<span class="hljs-string">&quot;Can&#x27;t try to remove on a Sentinel!&quot;</span>);
+  }
+}</code></pre></div>
+<p><strong>Now Mutable list class</strong></p>
+<div class="joplin-editable"><pre class="joplin-source" data-joplin-language="Java" data-joplin-source-open="```Java&#10;" data-joplin-source-close="&#10;```">class MutablePersonList {
+  Sentinel sentinel;
+  MutablePersonList() {
+    this.sentinel = new Sentinel(new MtLoPerson());
+  }
+}
+
+void removePerson(String name) {
+  this.sentinel.rest.removePersonHelp(name, this.sentinel);
+}</pre><pre class="hljs"><code><span class="hljs-keyword">class</span> <span class="hljs-title class_">MutablePersonList</span> {
+  Sentinel sentinel;
+  MutablePersonList() {
+    <span class="hljs-built_in">this</span>.sentinel = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Sentinel</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">MtLoPerson</span>());
+  }
+}
+
+<span class="hljs-keyword">void</span> <span class="hljs-title function_">removePerson</span><span class="hljs-params">(String name)</span> {
+  <span class="hljs-built_in">this</span>.sentinel.rest.removePersonHelp(name, <span class="hljs-built_in">this</span>.sentinel);
+}</code></pre></div>
+<p>Generalizing this:</p>
+<div class="joplin-editable"><pre class="joplin-source" data-joplin-language="Java" data-joplin-source-open="```Java&#10;" data-joplin-source-close="&#10;```">interface IMutableList&lt;T&gt; {
+  // adds an item to the (front of) the list
+  void addToFront(T t);
+  // adds an item to the end of the list
+  void addToEnd(T t);
+  // removes an item from list (uses intensional equality)
+  void remove(T t);
+  // removes the first item from the list that passes the predicate
+  void remove(IPred&lt;T&gt; whichOne);
+  // gets the numbered item (starting at index 0) of the list
+  T get(int index);
+  // sets (i.e. replaces) the numbered item (starting at index 0) with the given item
+  void set(int index, T t);
+  // inserts the given item at the numbered position
+  void insert(int index, T t);
+  // returns the length of the list
+  int size();
+}</pre><pre class="hljs"><code><span class="hljs-keyword">interface</span> <span class="hljs-title class_">IMutableList</span>&lt;T&gt; {
+  <span class="hljs-comment">// adds an item to the (front of) the list</span>
+  <span class="hljs-keyword">void</span> <span class="hljs-title function_">addToFront</span><span class="hljs-params">(T t)</span>;
+  <span class="hljs-comment">// adds an item to the end of the list</span>
+  <span class="hljs-keyword">void</span> <span class="hljs-title function_">addToEnd</span><span class="hljs-params">(T t)</span>;
+  <span class="hljs-comment">// removes an item from list (uses intensional equality)</span>
+  <span class="hljs-keyword">void</span> <span class="hljs-title function_">remove</span><span class="hljs-params">(T t)</span>;
+  <span class="hljs-comment">// removes the first item from the list that passes the predicate</span>
+  <span class="hljs-keyword">void</span> <span class="hljs-title function_">remove</span><span class="hljs-params">(IPred&lt;T&gt; whichOne)</span>;
+  <span class="hljs-comment">// gets the numbered item (starting at index 0) of the list</span>
+  T <span class="hljs-title function_">get</span><span class="hljs-params">(<span class="hljs-type">int</span> index)</span>;
+  <span class="hljs-comment">// sets (i.e. replaces) the numbered item (starting at index 0) with the given item</span>
+  <span class="hljs-keyword">void</span> <span class="hljs-title function_">set</span><span class="hljs-params">(<span class="hljs-type">int</span> index, T t)</span>;
+  <span class="hljs-comment">// inserts the given item at the numbered position</span>
+  <span class="hljs-keyword">void</span> <span class="hljs-title function_">insert</span><span class="hljs-params">(<span class="hljs-type">int</span> index, T t)</span>;
+  <span class="hljs-comment">// returns the length of the list</span>
+  <span class="hljs-type">int</span> <span class="hljs-title function_">size</span><span class="hljs-params">()</span>;
+}</code></pre></div>
+<p>Java roughly implements this... but a few things to note. See ArrayLists</p>
+<hr>
+<p>L21: Array Lists</p>
+<p><code class="inline-code">import java.util.ArrayList;</code><br>
+Now using the ArrayList&lt;T&gt; class.<br>
+Unlike our IList&lt;T&gt; and its attendant ConsList&lt;T&gt; and MtList&lt;T&gt; classes, we do not control the implementation of ArrayList&lt;T&gt;.</p>
+<p>i) Getting from Array List: needs to handle out of bounds exception (e.g. IndexOutOfBoundsException)</p>
+<p>ii) Swap(ArrayList<t class="jop-noMdConv">, int index1, int index2) Manipulating strings (exchange two items).</p>
+<p>iii) Transform an ArrayList with map:</p>
+<ul>
+<li>Using iterator loops: need to track current index we're manipulating. Also since adding is 'void' returning, must store a list accumulator for the new list.</li>
+</ul>
+<div class="joplin-editable"><pre class="joplin-source" data-joplin-language="" data-joplin-source-open="```&#10;" data-joplin-source-close="&#10;```">// In ArrayUtils
+&lt;T, U&gt; ArrayList&lt;U&gt; map(ArrayList&lt;T&gt; arr, IFunc&lt;T, U&gt; func) {
+  ArrayList&lt;U&gt; result = new ArrayList&lt;U&gt;();
+  return this.mapHelp(arr, func, 0, result);
+}
+
+// Computes the result of mapping the given function over the source list
+// from the given current index to the end of the list, and returns the
+// given destination list
+// EFFECT: modifies the destination list to contain the mapped results
+&lt;T, U&gt; ArrayList&lt;U&gt; mapHelp(ArrayList&lt;T&gt; source, IFunc&lt;T, U&gt; func,
+                            int curIdx, ArrayList&lt;U&gt; dest) {
+  if (curIdx &gt;= source.size()) {
+    return dest;
+  }
+  else {
+    dest.add(func.apply(source.get(curIdx)));
+    return this.mapHelp(source, func, curIdx + 1, dest);
+  }
+}</pre><pre class="hljs"><code><span class="hljs-comment">// In ArrayUtils</span>
+<span class="hljs-operator">&lt;</span><span class="hljs-type">T</span>, <span class="hljs-type">U</span><span class="hljs-operator">&gt;</span> <span class="hljs-type">ArrayList</span>&lt;<span class="hljs-type">U</span>&gt; map(<span class="hljs-type">ArrayList</span>&lt;<span class="hljs-type">T</span>&gt; arr, <span class="hljs-type">IFunc</span>&lt;<span class="hljs-type">T</span>, <span class="hljs-type">U</span>&gt; <span class="hljs-keyword">func</span>) {
+  <span class="hljs-type">ArrayList</span>&lt;<span class="hljs-type">U</span>&gt; result <span class="hljs-operator">=</span> new <span class="hljs-type">ArrayList</span>&lt;<span class="hljs-type">U</span>&gt;();
+  <span class="hljs-keyword">return</span> this.mapHelp(arr, <span class="hljs-keyword">func</span>, <span class="hljs-number">0</span>, result);
+}
+
+<span class="hljs-comment">// Computes the result of mapping the given function over the source list</span>
+<span class="hljs-comment">// from the given current index to the end of the list, and returns the</span>
+<span class="hljs-comment">// given destination list</span>
+<span class="hljs-comment">// EFFECT: modifies the destination list to contain the mapped results</span>
+<span class="hljs-operator">&lt;</span><span class="hljs-type">T</span>, <span class="hljs-type">U</span><span class="hljs-operator">&gt;</span> <span class="hljs-type">ArrayList</span>&lt;<span class="hljs-type">U</span>&gt; mapHelp(<span class="hljs-type">ArrayList</span>&lt;<span class="hljs-type">T</span>&gt; source, <span class="hljs-type">IFunc</span>&lt;<span class="hljs-type">T</span>, <span class="hljs-type">U</span>&gt; <span class="hljs-keyword">func</span>,
+                            int curIdx, <span class="hljs-type">ArrayList</span>&lt;<span class="hljs-type">U</span>&gt; dest) {
+  <span class="hljs-keyword">if</span> (curIdx <span class="hljs-operator">&gt;=</span> source.size()) {
+    <span class="hljs-keyword">return</span> dest;
+  }
+  <span class="hljs-keyword">else</span> {
+    dest.add(<span class="hljs-keyword">func</span>.apply(source.get(curIdx)));
+    <span class="hljs-keyword">return</span> this.mapHelp(source, <span class="hljs-keyword">func</span>, curIdx <span class="hljs-operator">+</span> <span class="hljs-number">1</span>, dest);
+  }
+}</code></pre></div>
+<p>iv) Transform an ArrayList with map (for-each loop):</p>
+<div class="joplin-editable"><pre class="joplin-source" data-joplin-language="Java" data-joplin-source-open="```Java&#10;" data-joplin-source-close="&#10;```">// In ArrayUtils
+&lt;T, U&gt; ArrayList&lt;U&gt; map(ArrayList&lt;T&gt; arr, IFunc&lt;T, U&gt; func) {
+  ArrayList&lt;U&gt; result = new ArrayList&lt;U&gt;();
+  for (T t : arr) {
+    result.add(func.apply(t));
+  }
+  return result;
+}</pre><pre class="hljs"><code><span class="hljs-comment">// In ArrayUtils</span>
+&lt;T, U&gt; ArrayList&lt;U&gt; <span class="hljs-title function_">map</span><span class="hljs-params">(ArrayList&lt;T&gt; arr, IFunc&lt;T, U&gt; func)</span> {
+  ArrayList&lt;U&gt; result = <span class="hljs-keyword">new</span> <span class="hljs-title class_">ArrayList</span>&lt;U&gt;();
+  <span class="hljs-keyword">for</span> (T t : arr) {
+    result.add(func.apply(t));
+  }
+  <span class="hljs-keyword">return</span> result;
+}</code></pre></div>
+<p>For each generally written as:</p>
+<div class="joplin-editable"><pre class="joplin-source" data-joplin-language="Java" data-joplin-source-open="```Java&#10;" data-joplin-source-close="&#10;```">... myMethod(ArrayList&lt;X&gt; xs) {
+  ...setup...
+  for (X x : xs) {
+    ...body...
+  }
+  ...use results...
+}</pre><pre class="hljs"><code>... myMethod(ArrayList&lt;X&gt; xs) {
+  ...setup...
+  <span class="hljs-keyword">for</span> (X x : xs) {
+    ...body...
+  }
+  ...use results...
+}</code></pre></div>
+<ul>
+<li>Each loop declares loop variable x, and its type</li>
+<li>The list to be iterated over (xs)</li>
+<li>Body consisting of statements to do for each x</li>
+</ul>
+<hr>
+<p>L22:<br>
+Finding across a list:</p>
+<div class="joplin-editable"><pre class="joplin-source" data-joplin-language="Java" data-joplin-source-open="```Java&#10;" data-joplin-source-close="&#10;```">    // In ArrayUtils
+    // Returns the index of the first item passing the predicate at or after the
+    // given index, or -1 if no such such item was found
+    &lt;T&gt; int findHelp(ArrayList&lt;T&gt; arr, IPred&lt;T&gt; whichOne, int index) {
+      if (index &gt;= arr.size()) {
+        return -1;
+      }
+      else if (whichOne.apply(arr.get(index)) {
+        return index;
+      }
+      else {
+        return findHelp(arr, whichOne, index + 1);
+      }
+    }</pre><pre class="hljs"><code>    <span class="hljs-comment">// In ArrayUtils</span>
+    <span class="hljs-comment">// Returns the index of the first item passing the predicate at or after the</span>
+    <span class="hljs-comment">// given index, or -1 if no such such item was found</span>
+    &lt;T&gt; <span class="hljs-type">int</span> <span class="hljs-title function_">findHelp</span><span class="hljs-params">(ArrayList&lt;T&gt; arr, IPred&lt;T&gt; whichOne, <span class="hljs-type">int</span> index)</span> {
+      <span class="hljs-keyword">if</span> (index &gt;= arr.size()) {
+        <span class="hljs-keyword">return</span> -<span class="hljs-number">1</span>;
+      }
+      <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (whichOne.apply(arr.get(index)) {
+        <span class="hljs-keyword">return</span> index;
+      }
+      <span class="hljs-keyword">else</span> {
+        <span class="hljs-keyword">return</span> findHelp(arr, whichOne, index + <span class="hljs-number">1</span>);
+      }
+    }</code></pre></div>
+<p>Returns -1 if not found.</p>
+<p>What if sorted?</p>
+<div class="joplin-editable"><pre class="joplin-source" data-joplin-language="Java" data-joplin-source-open="```Java&#10;" data-joplin-source-close="&#10;```">// In ArrayUtils
+// Returns the index of the target string in the given ArrayList, or -1 if the string is not found
+// Assumes that the given ArrayList is sorted aphabetically
+// Assumes that [lowIdx, highIdx) is a semi-open interval of indices
+// In ArrayUtils
+&lt;T&gt; int gen_binarySearch_v2(ArrayList&lt;T&gt; arr, T target, IComparator&lt;T&gt; comp) {
+  return this.gen_binarySearchHelp_v2(arr, target, comp, 0, arr.size());
+}
+&lt;T&gt; int gen_binarySearchHelp_v2(ArrayList&lt;T&gt; arr, T target, IComparator&lt;T&gt; comp,
+                                int lowIdx, int highIdx) {
+  int midIdx = (lowIdx + highIdx) / 2;
+  if (lowIdx &gt;= highIdx) {
+    return -1;
+  }
+  else if (comp.compare(target, strings.get(midIdx)) == 0) {
+    return midIdx;
+  }
+  else if (comp.compare(target, strings.get(midIdx)) &gt; 0) {
+    return this.gen_binarySearchHelp_v2(strings, target, comp, midIdx + 1, highIdx);
+  }
+  else {
+    return this.gen_binarySearchHelp_v2(strings, target, comp, lowIdx, midIdx);
+  }
+}</pre><pre class="hljs"><code><span class="hljs-comment">// In ArrayUtils</span>
+<span class="hljs-comment">// Returns the index of the target string in the given ArrayList, or -1 if the string is not found</span>
+<span class="hljs-comment">// Assumes that the given ArrayList is sorted aphabetically</span>
+<span class="hljs-comment">// Assumes that [lowIdx, highIdx) is a semi-open interval of indices</span>
+<span class="hljs-comment">// In ArrayUtils</span>
+&lt;T&gt; <span class="hljs-type">int</span> <span class="hljs-title function_">gen_binarySearch_v2</span><span class="hljs-params">(ArrayList&lt;T&gt; arr, T target, IComparator&lt;T&gt; comp)</span> {
+  <span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>.gen_binarySearchHelp_v2(arr, target, comp, <span class="hljs-number">0</span>, arr.size());
+}
+&lt;T&gt; <span class="hljs-type">int</span> <span class="hljs-title function_">gen_binarySearchHelp_v2</span><span class="hljs-params">(ArrayList&lt;T&gt; arr, T target, IComparator&lt;T&gt; comp,
+                                <span class="hljs-type">int</span> lowIdx, <span class="hljs-type">int</span> highIdx)</span> {
+  <span class="hljs-type">int</span> <span class="hljs-variable">midIdx</span> <span class="hljs-operator">=</span> (lowIdx + highIdx) / <span class="hljs-number">2</span>;
+  <span class="hljs-keyword">if</span> (lowIdx &gt;= highIdx) {
+    <span class="hljs-keyword">return</span> -<span class="hljs-number">1</span>;
+  }
+  <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (comp.compare(target, strings.get(midIdx)) == <span class="hljs-number">0</span>) {
+    <span class="hljs-keyword">return</span> midIdx;
+  }
+  <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (comp.compare(target, strings.get(midIdx)) &gt; <span class="hljs-number">0</span>) {
+    <span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>.gen_binarySearchHelp_v2(strings, target, comp, midIdx + <span class="hljs-number">1</span>, highIdx);
+  }
+  <span class="hljs-keyword">else</span> {
+    <span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>.gen_binarySearchHelp_v2(strings, target, comp, lowIdx, midIdx);
+  }
+}</code></pre></div>
+<p>Sorting ArrayList</p>
+<p>Generalized Looping:</p>
+<div class="joplin-editable"><pre class="joplin-source" data-joplin-language="Java" data-joplin-source-open="```Java&#10;" data-joplin-source-close="&#10;```"> for (int idx = 0;                                   // (1)
+       idx &lt; arr.size();                              // (2)
+       idx = idx + 1) {                               // (4)
+                                                      // (3)
+    int idxOfMinValue = ...find minimum value in not-yet-sorted part...
+    this.swap(arr, minIdx, idxOfMinValue);
+  }</pre><pre class="hljs"><code> <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> <span class="hljs-variable">idx</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>;                                   <span class="hljs-comment">// (1)</span>
+       idx &lt; arr.size();                              <span class="hljs-comment">// (2)</span>
+       idx = idx + <span class="hljs-number">1</span>) {                               <span class="hljs-comment">// (4)</span>
+                                                      <span class="hljs-comment">// (3)</span>
+    <span class="hljs-type">int</span> <span class="hljs-variable">idxOfMinValue</span> <span class="hljs-operator">=</span> ...find minimum value in not-yet-sorted part...
+    <span class="hljs-built_in">this</span>.swap(arr, minIdx, idxOfMinValue);
+  }</code></pre></div>
+<p>1: Start condition<br>
+2: end condition<br>
+3: Body<br>
+4: Update condition</p>
+<p>Can write within a single line:<br>
+<code class="inline-code">for (int idx = smallOddNumber; idx &lt; bigNumber; idx = idx + 2) { ... }</code></p>
+</div></div>
+					</body>
+				</html>
+			
