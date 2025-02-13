@@ -1,0 +1,151 @@
+class Ball {
+  static int screenWidth;
+  static int screenHeight;
+  static int perspectiveScale;
+  static int fieldLength;
+  field int posX, posY, posZ; 
+  //position X,Y,Z (starting at Z=10) co-ordinate of ball relative to center of ball on first frame. 
+  // (center of ball) * 100 for precision
+  field int velX, velY, velZ;
+  field int magnusX, magnusY, magnusZ;
+
+  field int spinX, spinY, spinZ;
+  //spin resulting in angular velocity around in X/Y/Z axis
+  field int strikeX, strikeY, strikeZ;
+  field int initialVelocity;
+  field int magnusCoefficient; //spin effect coefficient
+  field int spinCoefficient; //coefficient including density, mass and other factors. Should be 172
+  field boolean isDone; //simulation complete
+
+  constructor Ball new(int scrWidth, int scrHeight) {
+    let screenWidth = scrWidth;
+    let screenHeight = scrHeight;
+    let perspectiveScale = 240; //scaled 960 down by factor of 4
+    let fieldLength = 90;
+    
+    let posX = 0; //ball is centered to start
+    let posY = 0; //ball is on ground to start
+    let posZ = 10*100; //10 feet away
+    //assume 100 ft/s initial velocity, ~71 ft/s each Y and Z. With 100 factor for added precision.
+    let velX = 0; //assume starting off struck head on
+    let velY = 35*100; //*100 factor for accuracy => theoretically 25 ft/s initial velY results in goal at 71ft/s velZ
+    let velZ = 71*100; //*100 factor for accuracy
+    let strikeX = 0;
+    let strikeY = 0;
+    let strikeZ = 0;
+    let isDone = false;
+
+    // let dragCoefficient = 97; // must /100 later
+    let magnusCoefficient = 35; // must /100 later
+    let spinCoefficient = 4; //Inverse of spin coefficient to divide with. ~172, but using factor 10 off.. Set to /4 => 0.25 constant
+    return this;
+  }
+
+  /** Deallocates the Ball's memory. */
+  method void dispose() {
+    do Memory.deAlloc(this);
+    return;
+  }
+
+  /** Set initial strike X and Y position for spin calculations. 
+    * And then calculate angular velocity (held constant over time)
+    */
+  method void setStrike(int reticleX, int reticleY) {
+    let strikeX = reticleX;
+    let strikeY = reticleY;
+    //strikeZ set assuming sphere (10px radius, which is 100 when squared). Thus strikeDistance is constant at 10px.
+    let strikeZ = 100-(strikeX * strikeX)-(strikeY * strikeY);
+    let strikeZ = Math.sqrt(strikeZ);
+    let strikeZ = -strikeZ; //always negative given direction of strike
+    //calc angular w_x
+    let spinX = ((strikeY * (velZ/100))-(strikeZ * (velY/100)));
+    //calc angular w_y (note Vx=0 initially) = - (x Vz)/(r^2)
+    let spinY = -(strikeX * (velZ/100));
+    //calc angular w_z (note Vx=0 initially) = (x Vy)/(r^2)
+    let spinZ = (strikeX * (velY/100));
+    return;
+  }
+  
+  /** Get X position */
+  method int getPosX() {
+    return posX;
+  }
+
+  /** Get Y position */
+  method int getPosY() {
+    return posY;
+  }
+
+  /** Get Z position */
+  method int getPosZ() {
+    return posZ;
+  }
+
+    /** Get Z position */
+  method boolean getIsDone() {
+    return isDone;
+  }
+
+  /**
+    * Calculate Magnus Acceleration but these'll round to zero generally. I can mess with this coefficient to exaggerate things if needed
+    */
+  method void calculateMagnusAccelerations() {
+    var int magnusX; //horizontal magnus accel
+    var int magnusY; //vertical magnus accel
+    var int magnusZ; //size magnus accel
+
+    //Magnus accel constant = (½ρπr³/m) => ½ × 0.00238 × π × (0.375)³ / 0.03 ~ 0.00581 ft³/slug ~ 1/172
+    // Overall constant k = 1/172
+    // ax = (½ρπr³/m)(ΩyVz - ΩzVy)
+    // ay = (½ρπr³/m)(ΩzVx - ΩxVz) 
+    // az = (½ρπr³/m)(ΩxVy - ΩyVx) 
+    let magnusX = ((spinY*(velZ/10)) - (spinZ*(velY/10))) / spinCoefficient;
+    let magnusY = ((spinZ*(velX/10)) - (spinX*(velZ/10))) / spinCoefficient;
+    let magnusZ = ((spinX*(velY/10)) - (spinY*(velX/10))) / spinCoefficient;
+    return;
+  }
+
+  /**
+    * Called during next tick.
+    */
+  method void updatePosition() {
+    //Simulate next tick of physics (tick = 0.05s)
+    let posX = posX + ((velX / 100) * 5);
+    let posY = posY + ((velY / 100) * 5);
+    let posZ = posZ + ((velZ / 100) * 5);
+
+    //Apply Magnus effects, even if 0
+    let velX = velX + ((magnusX * 5) / 100);
+    //Gravity: 32.174 * 100 *0.05 = 161
+    let velY = velY + ((magnusY * 5) / 100) - 161; 
+    let velZ = velZ + ((magnusZ * 5) / 100);
+
+    //End condition: Y height < 1foot i.e.hits ground. OR 90 feet distance
+    if ((posY < 100) | (posZ > 9000)) {
+      let posY = 0;
+      let isDone = true;
+    }
+    // Ideally Check for bounce if after next y change (bounce coefficient 0.35), but for now just end
+    return;
+  }
+
+  /**
+    * Draws the ball in 2D screen space.
+    * This uses the posX, posY and posZ and projects to 2D space of the screen's dimensions
+    */
+  method void draw() {
+    var int xProj; //projected X position on screen
+    var int yProj; //projected Y position on screen, note Y is reversed in 2D here.
+    var int ballSize; //ball radius in pixels
+
+    let xProj = (screenWidth / 2) + (((posX / 100) * perspectiveScale) / (posZ / 100));
+    //Fix below - y is reversed.
+    let yProj = (screenHeight / 2) - (((posY / 100) * perspectiveScale) / (posZ / 100));
+    let ballSize = (3 * perspectiveScale) / (posZ/100); //0.75ft ball scaled = 4px rad
+
+    do Screen.drawCircle(xProj, yProj, ballSize); //need to add scaling factor by distance
+    return;
+  }
+  //Ball Physics:
+  // Gravitational constant in feet: 32.17405 ft/s2
+}

@@ -1,0 +1,260 @@
+/**
+  FreekickGame Controller represents singleton implementation of interface
+  that controls a Ball instance. 
+  This represents a 80 foot (~26.6 yard) free kick towards a goal of size 8x24ft, viewed from 10 feet away.
+*/
+class FreekickGame {
+  static FreekickGame instance; //following Pong's singleton pattern
+
+  static int screenWidth;
+  static int screenHeight;
+  static int goalWidth;
+  static int goalHeight;
+  static int fieldLength;
+
+  static int gConstant;
+  static int pixelPerFoot;
+  static int timeStep;
+
+  static int ballPadding;
+  static int maxBallSize;
+  static int aimBallX; //targeting ball position
+  static int aimBallY;
+
+  field Ball ball;
+  //classes needed: pitch? goal? Instead put these as part of the game.
+  //Calculating distances in feet (e.g. 30 yard = 90 ft)
+  field int initialVelocity;
+  //40 ft/s * 100 for added precision
+  field int dragCoefficient;
+
+  field int reticleX; //aiming reticle position
+  field int reticleY;
+
+  constructor FreekickGame new() {
+    do Screen.clearScreen();
+    
+    //Set statics, dimensions in feet
+    let screenWidth = 512;
+    let screenHeight = 256;
+    let goalWidth = 24;
+    let goalHeight = 8;
+    let fieldLength = 90; //90 feet kick distance
+    let gConstant = 32; //g acceleration in feet/s^2
+    let pixelPerFoot = 5; //set pixels per foot for future conversions
+    let timeStep = 16; //0.16ms can tweak this
+
+    let ballPadding = 20; //max pixels from edge
+    let maxBallSize = 20; //max ball diameter
+
+    let aimBallX = (screenWidth/2) - 10; //246
+    let aimBallY = (screenHeight) - 30; //226
+
+    //fields
+    let reticleX = aimBallX; //move aiming reticle to center of ball
+    let reticleY = aimBallY;
+    let initialVelocity = 4000;
+    let dragCoefficient = 97;
+    let ball = Ball.new(screenWidth, screenHeight);
+    return this;
+  }
+
+  method void dispose() {
+    //teardown code for all objects
+    do ball.dispose();
+    do Memory.deAlloc(this);
+    return;
+  }
+
+  function void newInstance() {
+    let instance = FreekickGame.new();
+    return;
+  }
+
+  function FreekickGame getInstance() {
+    return instance;
+  }
+
+  method void run() {
+    var char key;
+    var boolean exit;
+    var boolean aiming;
+    var boolean simulating;
+    var boolean isDone;
+    let exit = false;
+    let aiming = true;
+    let simulating = false;
+    let isDone = false;
+
+    //Prep aim code
+    do drawAimBall();
+
+    // Freekick piece running
+    while (~exit) {
+      //State machine while running: aiming -> simulating
+      let key = Keyboard.keyPressed();
+
+      //prompt for restart 'r' or 'q' to end.
+      //top level quit: q => 113
+      if (key = 113) {
+        let exit = true;
+      }
+      //restart/aim: r => 114
+      if (key = 114) {
+        let aiming = true;
+        let simulating = false;
+        do Screen.clearScreen();
+        let reticleX = aimBallX; //move aiming reticle to center of ball
+        let reticleY = aimBallY;
+        do drawAimBall();
+        do ball.dispose();
+        let ball = Ball.new(screenWidth, screenHeight);
+      }
+
+      while (aiming) {
+        let key = Keyboard.keyPressed();
+        // Waits for the key to be released.
+        while ((~(key = 0)) & (aiming)) {
+          let key = Keyboard.keyPressed();
+          //quit: q => 113
+          if (key = 113) {
+            let aiming = false;
+            let exit = true;
+          }
+          //begin simulation: space => 32
+          if (key = 32) {
+            let aiming = false;
+            //White out reticle and aiming ball
+            do Screen.setColor(false);
+            do drawReticle();
+            do Screen.drawCircle(aimBallX, aimBallY, 20);
+            do Screen.setColor(true);
+
+            //PRE SIMULATION INIT
+            //Set strikeX and Y for spin calculations. Note Y is reversed axis
+            do ball.setStrike(reticleX-aimBallX, aimBallY-reticleY);
+            do ball.draw();
+            let simulating = true;
+          }
+          if ((key=131) | (key=130) | (key=132) | (key=133)) { 
+            // left (130), up (131), right (132), down (133)
+            do Screen.setColor(false);
+            do drawReticle(); //undraw previous reticle
+            do Screen.setColor(true);
+            do drawAimBall(); //redraw aiming ball
+            do moveReticle(key);
+            do drawReticle();
+            do Sys.wait(50);
+          }
+        }
+      }
+
+      while (simulating) {
+        //if a simulation is running, don't take arrow inputs, r or q
+        do Screen.setColor(true);
+        do drawGoal();
+
+        // TODO Check end conditions - exit if done
+        let isDone = ball.getIsDone();
+        if (isDone = true) {
+          let simulating = false;
+        } else {
+          //undraw previous frame
+          do Screen.clearScreen();
+          // Update ball position
+          do drawGoal();
+          do ball.updatePosition();
+          do ball.draw();
+          // Sys wait to tick forward
+          do Sys.wait(50); //0.05s tick time
+        }
+      }
+    }
+    return;
+  }
+
+  /**
+    * Draw ball for aiming mode
+    */
+  method void drawAimBall() {
+    do Screen.drawCircle(aimBallX, aimBallY, 20); //draw mock ball to aim over
+    do Screen.setColor(false);
+    do Screen.drawCircle(aimBallX, aimBallY, 18); //white out circle 
+    do Screen.setColor(true);
+    do drawReticle();
+    return;
+  }
+
+  /**
+    * Reticle drawn as + symbol, 5 pixels wide and tall.
+    */
+  method void drawReticle() {
+    do Screen.drawLine(reticleX-2,reticleY,reticleX+2,reticleY);
+    do Screen.drawLine(reticleX,reticleY-2,reticleX,reticleY+2);
+    return;
+  }
+
+  method void moveReticle(char key) {
+    // left (130), up (131), right (132), down (133)
+    // Move only if it's at within 3 wide margin of the ball's outer edge
+    var boolean isWithinBall;
+    var int tempX;
+    var int tempY;
+    var int polarX;
+    var int polarY;
+
+    let isWithinBall = true;
+    let tempX = reticleX;
+    let tempY = reticleY;
+    if ((key = 130)) {
+      let tempX = reticleX - 1;
+    }
+    if ((key = 131) & (isWithinBall)) {
+      let tempY = reticleY - 1;
+    }
+    if ((key = 132) & (isWithinBall)) {
+      let tempX = reticleX + 1;
+    }
+    if ((key = 133) & (isWithinBall)) { 
+      let tempY = reticleY + 1;
+    }
+
+    let polarX = tempX - aimBallX;
+    let polarY = tempY - aimBallY;
+    if (((polarX * polarX) + (polarY * polarY)) > ((17 * 17) - 1)) {
+      let isWithinBall = false; //if not in radius of 17 circle
+    }
+
+    if (isWithinBall) {
+      let reticleX = tempX;
+      let reticleY = tempY;
+    }
+    return;
+  }
+
+  method void drawGoal() {
+    var int perspectiveScale;
+    var int scaledWidth;
+    var int scaledHeight;
+    var int leftPostX;
+    var int rightPostX;
+    var int crossbarY;
+    let perspectiveScale = 240; //scale down by 4, with perspective constant of 960
+    //Perspective drawing formula, where f is perspectiveScale
+    //X2 = Xcenter + (X3/Z3)*f
+    //Y2 = Ycenter + (Y3/Z3)*f
+    let scaledWidth = ((goalWidth * perspectiveScale) / fieldLength);
+    let leftPostX = ((screenWidth-scaledWidth) / 2);
+    let rightPostX = ((screenWidth+scaledWidth) / 2);
+    let crossbarY = (screenHeight / 2) - ((goalHeight * perspectiveScale) / fieldLength);
+    // Post width at 4 pixels ~1/3 foot post width
+
+    //LEFT POST 222,128,226,107
+    do Screen.drawRectangle(leftPostX-2, crossbarY, leftPostX+2,(screenHeight/2));
+    //RIGHT POST 286,128,290,107
+    do Screen.drawRectangle(rightPostX-2, crossbarY, rightPostX+2,(screenHeight/2));
+    //CROSSBAR 222,105,290,109
+    do Screen.drawRectangle(leftPostX-2, crossbarY-2, rightPostX+2, crossbarY+2);
+    return;
+  }
+}

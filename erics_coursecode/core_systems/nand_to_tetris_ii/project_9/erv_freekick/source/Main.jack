@@ -1,0 +1,15 @@
+/**
+  Initialize Freekick simulation with point of contact selection.
+  Main class calls into FreekickGame Controller
+*/
+class Main {
+  //Initialize
+  function void main() {
+    var FreekickGame game;
+    do FreekickGame.newInstance();
+    let game = FreekickGame.getInstance();
+    do game.run();
+    do game.dispose();
+    return;
+  }
+}

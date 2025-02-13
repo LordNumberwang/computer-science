@@ -1,0 +1,520 @@
+function FreekickGame.new 0
+    push constant 5
+    call Memory.alloc 1
+    pop pointer 0
+    call Screen.clearScreen 0
+    pop temp 0
+    push constant 512
+    pop static 1
+    push constant 256
+    pop static 2
+    push constant 24
+    pop static 3
+    push constant 8
+    pop static 4
+    push constant 90
+    pop static 5
+    push constant 32
+    pop static 6
+    push constant 5
+    pop static 7
+    push constant 16
+    pop static 8
+    push constant 20
+    pop static 9
+    push constant 20
+    pop static 10
+    push static 1
+    push constant 2
+    call Math.divide 2
+    push constant 10
+    sub
+    pop static 11
+    push static 2
+    push constant 30
+    sub
+    pop static 12
+    push static 11
+    pop this 3
+    push static 12
+    pop this 4
+    push constant 4000
+    pop this 1
+    push constant 97
+    pop this 2
+    push static 1
+    push static 2
+    call Ball.new 2
+    pop this 0
+    push pointer 0
+    return
+function FreekickGame.dispose 0
+    push argument 0
+    pop pointer 0
+    push this 0
+    call Ball.dispose 1
+    pop temp 0
+    push pointer 0
+    call Memory.deAlloc 1
+    pop temp 0
+    push constant 0
+    return
+function FreekickGame.newInstance 0
+    call FreekickGame.new 0
+    pop static 0
+    push constant 0
+    return
+function FreekickGame.getInstance 0
+    push static 0
+    return
+function FreekickGame.run 5
+    push argument 0
+    pop pointer 0
+    push constant 0
+    pop local 1
+    push constant 1
+    neg
+    pop local 2
+    push constant 0
+    pop local 3
+    push constant 0
+    pop local 4
+    push pointer 0
+    call FreekickGame.drawAimBall 1
+    pop temp 0
+label FreekickGame_0
+    push local 1
+    not
+    not
+    if-goto FreekickGame_1
+    call Keyboard.keyPressed 0
+    pop local 0
+    push local 0
+    push constant 113
+    eq
+    not
+    if-goto FreekickGame_3
+    push constant 1
+    neg
+    pop local 1
+    goto FreekickGame_2
+label FreekickGame_3
+label FreekickGame_2
+    push local 0
+    push constant 114
+    eq
+    not
+    if-goto FreekickGame_5
+    push constant 1
+    neg
+    pop local 2
+    push constant 0
+    pop local 3
+    call Screen.clearScreen 0
+    pop temp 0
+    push static 11
+    pop this 3
+    push static 12
+    pop this 4
+    push pointer 0
+    call FreekickGame.drawAimBall 1
+    pop temp 0
+    push this 0
+    call Ball.dispose 1
+    pop temp 0
+    push static 1
+    push static 2
+    call Ball.new 2
+    pop this 0
+    goto FreekickGame_4
+label FreekickGame_5
+label FreekickGame_4
+label FreekickGame_6
+    push local 2
+    not
+    if-goto FreekickGame_7
+    call Keyboard.keyPressed 0
+    pop local 0
+label FreekickGame_8
+    push local 0
+    push constant 0
+    eq
+    not
+    push local 2
+    and
+    not
+    if-goto FreekickGame_9
+    call Keyboard.keyPressed 0
+    pop local 0
+    push local 0
+    push constant 113
+    eq
+    not
+    if-goto FreekickGame_11
+    push constant 0
+    pop local 2
+    push constant 1
+    neg
+    pop local 1
+    goto FreekickGame_10
+label FreekickGame_11
+label FreekickGame_10
+    push local 0
+    push constant 32
+    eq
+    not
+    if-goto FreekickGame_13
+    push constant 0
+    pop local 2
+    push constant 0
+    call Screen.setColor 1
+    pop temp 0
+    push pointer 0
+    call FreekickGame.drawReticle 1
+    pop temp 0
+    push static 11
+    push static 12
+    push constant 20
+    call Screen.drawCircle 3
+    pop temp 0
+    push constant 1
+    neg
+    call Screen.setColor 1
+    pop temp 0
+    push this 0
+    push this 3
+    push static 11
+    sub
+    push static 12
+    push this 4
+    sub
+    call Ball.setStrike 3
+    pop temp 0
+    push this 0
+    call Ball.draw 1
+    pop temp 0
+    push constant 1
+    neg
+    pop local 3
+    goto FreekickGame_12
+label FreekickGame_13
+label FreekickGame_12
+    push local 0
+    push constant 131
+    eq
+    push local 0
+    push constant 130
+    eq
+    or
+    push local 0
+    push constant 132
+    eq
+    or
+    push local 0
+    push constant 133
+    eq
+    or
+    not
+    if-goto FreekickGame_15
+    push constant 0
+    call Screen.setColor 1
+    pop temp 0
+    push pointer 0
+    call FreekickGame.drawReticle 1
+    pop temp 0
+    push constant 1
+    neg
+    call Screen.setColor 1
+    pop temp 0
+    push pointer 0
+    call FreekickGame.drawAimBall 1
+    pop temp 0
+    push pointer 0
+    push local 0
+    call FreekickGame.moveReticle 2
+    pop temp 0
+    push pointer 0
+    call FreekickGame.drawReticle 1
+    pop temp 0
+    push constant 50
+    call Sys.wait 1
+    pop temp 0
+    goto FreekickGame_14
+label FreekickGame_15
+label FreekickGame_14
+    goto FreekickGame_8
+label FreekickGame_9
+    goto FreekickGame_6
+label FreekickGame_7
+label FreekickGame_16
+    push local 3
+    not
+    if-goto FreekickGame_17
+    push constant 1
+    neg
+    call Screen.setColor 1
+    pop temp 0
+    push pointer 0
+    call FreekickGame.drawGoal 1
+    pop temp 0
+    push this 0
+    call Ball.getIsDone 1
+    pop local 4
+    push local 4
+    push constant 1
+    neg
+    eq
+    not
+    if-goto FreekickGame_19
+    push constant 0
+    pop local 3
+    goto FreekickGame_18
+label FreekickGame_19
+    call Screen.clearScreen 0
+    pop temp 0
+    push pointer 0
+    call FreekickGame.drawGoal 1
+    pop temp 0
+    push this 0
+    call Ball.updatePosition 1
+    pop temp 0
+    push this 0
+    call Ball.draw 1
+    pop temp 0
+    push constant 50
+    call Sys.wait 1
+    pop temp 0
+label FreekickGame_18
+    goto FreekickGame_16
+label FreekickGame_17
+    goto FreekickGame_0
+label FreekickGame_1
+    push constant 0
+    return
+function FreekickGame.drawAimBall 0
+    push argument 0
+    pop pointer 0
+    push static 11
+    push static 12
+    push constant 20
+    call Screen.drawCircle 3
+    pop temp 0
+    push constant 0
+    call Screen.setColor 1
+    pop temp 0
+    push static 11
+    push static 12
+    push constant 18
+    call Screen.drawCircle 3
+    pop temp 0
+    push constant 1
+    neg
+    call Screen.setColor 1
+    pop temp 0
+    push pointer 0
+    call FreekickGame.drawReticle 1
+    pop temp 0
+    push constant 0
+    return
+function FreekickGame.drawReticle 0
+    push argument 0
+    pop pointer 0
+    push this 3
+    push constant 2
+    sub
+    push this 4
+    push this 3
+    push constant 2
+    add
+    push this 4
+    call Screen.drawLine 4
+    pop temp 0
+    push this 3
+    push this 4
+    push constant 2
+    sub
+    push this 3
+    push this 4
+    push constant 2
+    add
+    call Screen.drawLine 4
+    pop temp 0
+    push constant 0
+    return
+function FreekickGame.moveReticle 5
+    push argument 0
+    pop pointer 0
+    push constant 1
+    neg
+    pop local 0
+    push this 3
+    pop local 1
+    push this 4
+    pop local 2
+    push argument 1
+    push constant 130
+    eq
+    not
+    if-goto FreekickGame_21
+    push this 3
+    push constant 1
+    sub
+    pop local 1
+    goto FreekickGame_20
+label FreekickGame_21
+label FreekickGame_20
+    push argument 1
+    push constant 131
+    eq
+    push local 0
+    and
+    not
+    if-goto FreekickGame_23
+    push this 4
+    push constant 1
+    sub
+    pop local 2
+    goto FreekickGame_22
+label FreekickGame_23
+label FreekickGame_22
+    push argument 1
+    push constant 132
+    eq
+    push local 0
+    and
+    not
+    if-goto FreekickGame_25
+    push this 3
+    push constant 1
+    add
+    pop local 1
+    goto FreekickGame_24
+label FreekickGame_25
+label FreekickGame_24
+    push argument 1
+    push constant 133
+    eq
+    push local 0
+    and
+    not
+    if-goto FreekickGame_27
+    push this 4
+    push constant 1
+    add
+    pop local 2
+    goto FreekickGame_26
+label FreekickGame_27
+label FreekickGame_26
+    push local 1
+    push static 11
+    sub
+    pop local 3
+    push local 2
+    push static 12
+    sub
+    pop local 4
+    push local 3
+    push local 3
+    call Math.multiply 2
+    push local 4
+    push local 4
+    call Math.multiply 2
+    add
+    push constant 17
+    push constant 17
+    call Math.multiply 2
+    push constant 1
+    sub
+    gt
+    not
+    if-goto FreekickGame_29
+    push constant 0
+    pop local 0
+    goto FreekickGame_28
+label FreekickGame_29
+label FreekickGame_28
+    push local 0
+    not
+    if-goto FreekickGame_31
+    push local 1
+    pop this 3
+    push local 2
+    pop this 4
+    goto FreekickGame_30
+label FreekickGame_31
+label FreekickGame_30
+    push constant 0
+    return
+function FreekickGame.drawGoal 6
+    push argument 0
+    pop pointer 0
+    push constant 240
+    pop local 0
+    push static 3
+    push local 0
+    call Math.multiply 2
+    push static 5
+    call Math.divide 2
+    pop local 1
+    push static 1
+    push local 1
+    sub
+    push constant 2
+    call Math.divide 2
+    pop local 3
+    push static 1
+    push local 1
+    add
+    push constant 2
+    call Math.divide 2
+    pop local 4
+    push static 2
+    push constant 2
+    call Math.divide 2
+    push static 4
+    push local 0
+    call Math.multiply 2
+    push static 5
+    call Math.divide 2
+    sub
+    pop local 5
+    push local 3
+    push constant 2
+    sub
+    push local 5
+    push local 3
+    push constant 2
+    add
+    push static 2
+    push constant 2
+    call Math.divide 2
+    call Screen.drawRectangle 4
+    pop temp 0
+    push local 4
+    push constant 2
+    sub
+    push local 5
+    push local 4
+    push constant 2
+    add
+    push static 2
+    push constant 2
+    call Math.divide 2
+    call Screen.drawRectangle 4
+    pop temp 0
+    push local 3
+    push constant 2
+    sub
+    push local 5
+    push constant 2
+    sub
+    push local 4
+    push constant 2
+    add
+    push local 5
+    push constant 2
+    add
+    call Screen.drawRectangle 4
+    pop temp 0
+    push constant 0
+    return
